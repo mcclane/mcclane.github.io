@@ -1,6 +1,8 @@
 head {
     color: black;
+    background-color: green;
 }
 body {
-    color: white;
+    color: black;
+    background-color: blue;
 }
