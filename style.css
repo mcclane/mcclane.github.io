@@ -1,8 +1,16 @@
-head {
-    color: black;
-    background-color: green;
-}
+@import url('https://fonts.googleapis.com/css?family=Roboto:400i');
 body {
-    color: black;
-    background-color: blue;
+    background-color: black;
+}
+.main_title {
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-size: 10vw;
+    text-align: center;
+}
+.main_body {
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-size: 5vw;
+    text-align: center;
 }
