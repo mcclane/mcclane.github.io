@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:400i');
 body {
-    background-color: blue;
+    background-color: black;
 }
 .main_title {
     color: white;
@@ -13,4 +13,7 @@ body {
     font-family: 'Roboto', sans-serif;
     font-size: 5vw;
     text-align: center;
+}
+.github_svg {
+    color: white;
 }
