@@ -2,7 +2,7 @@ var canvas = document.getElementById("game-canvas-1");
 var engine = new BABYLON.Engine(canvas, true);
 function createScene() {
     var scene = new BABYLON.Scene(engine);
-    var camera = new BABYLON.FreeCamera('camera', new BABYLON.Vector3(0, 5, -10), scene);
+    var camera = new BABYLON.UniversalCamera('camera', new BABYLON.Vector3(0, 5, -10), scene);
     camera.setTarget(BABYLON.Vector3.Zero());
     camera.attachControl(canvas, false);
     var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
