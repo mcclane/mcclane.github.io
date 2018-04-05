@@ -32,10 +32,16 @@ function createScene() {
 
     return scene;
 }
+// rendering the scene
 var scene = createScene();
 engine.runRenderLoop(function() {
     scene.render();
 })
+// event listener for click
+window.addEventListener('click' function() {
+    var pickResult = scene.pick(scene.pointerX, scene.pointerY);
+    alert(pickResult);
+});
 
 window.addEventListener('resize', function() {
     engine.resize();
