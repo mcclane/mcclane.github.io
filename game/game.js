@@ -164,10 +164,15 @@ class Weapon {
         this.player.camera.getViewMatrix().invertToRef(invView);
         var direction = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, 1), invView);
         direction.normalize();
+        direction.scaleInPlace(10);
+        // bullet.position.addInPlace(direction);
+        bullet.physicsImpostor = new BABYLON.PhysicsImpostor(bullet, BABYLON.PhysicsImpostor.SphereImpostor, {mass: .1, restitution: 0.9}, this.game.scene);
+        bullet.physicsImpostor.applyImpulse(direction, bullet.getAbsolutePosition());
+        // bullet.physicsImpostor.setLinearVelocity(direction);
 
-        this.game.scene.registerBeforeRender(function() {
-            bullet.position.addInPlace(direction);
-        });
+        // this.game.scene.registerBeforeRender(function() {
+        //     bullet.position.addInPlace(direction);
+        // });
     }
 }
 class Target {
@@ -175,6 +180,7 @@ class Target {
         this.game = game;
         var sphere = new BABYLON.MeshBuilder.CreateSphere('sphere', {segments: 64, diameter: 4}, this.game.scene);
         sphere.position.y = 2;
+        sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, {mass: 1, restitution: 0.5}, this.game.scene);
         sphere.checkCollisions = true;
     }
 }
@@ -182,7 +188,8 @@ class Map {
     constructor(game) {
         this.game = game;
         var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0));
-        var ground = BABYLON.MeshBuilder.CreateGround('ground1', {height: 100, width: 100, subdivisions: 4}, this.game.scene);
+        var ground = BABYLON.MeshBuilder.CreateGround('ground1', {height: 100, width: 100, depth: 1, subdivisions: 4}, this.game.scene);
+        ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, {mass: 0, restitution: 0.9}, this.game.scene);
         ground.checkCollisions = true;
     }
 }
@@ -222,6 +229,8 @@ class Game {
         console.log(scene);
         // gravity
         scene.gravity = new BABYLON.Vector3(0, -9.81, 0);
+        var physics = new BABYLON.CannonJSPlugin();
+        scene.enablePhysics(scene.gravity, physics);
         // collisions
         scene.collisionsEnabled = true;
         return scene;
