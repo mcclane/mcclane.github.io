@@ -1,10 +1,8 @@
 class Player {
     constructor(game) {
-        console.log(game);
         this.game = game;
         this.camera = this.createCamera();
         this.weapon = new Weapon(this.game, this);
-        console.log(this.weapon);
     }
     createCamera() {
         var camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(-5, 4, 0), this.game.scene);
@@ -35,7 +33,6 @@ class Weapon {
         this.mat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
         this.mesh = this.createWeapon();
         this.zoomed = false;
-        console.log(this.mesh);
         this.gunSight = this.addGunSight(this.game.scene);
     }
     createWeapon() {
@@ -54,6 +51,7 @@ class Weapon {
         var scopeCSG = BABYLON.CSG.FromMesh(scope);
         scopeCSG.subtractInPlace(BABYLON.CSG.FromMesh(hole));
         scope = scopeCSG.toMesh("scope", this.mat, this.game.scene, false);
+        hole.dispose();
 
         var lower = BABYLON.MeshBuilder.CreateBox('lower', {height: 0.75, width: 0.25, depth: 0.25}, this.game.scene);
         lower.position.y -= 0.25;
@@ -72,22 +70,21 @@ class Weapon {
         mesh.position.x += 0.5;
         mesh.position.y -= 0.3;
         mesh.position.z += 2;
-        console.log("("+mesh.position.x+", "+mesh.position.y+", "+mesh.position.z+")");
-        // mesh.rotation.y = Math.PI/2;
         mesh.parent = this.player.camera;
         mesh.material = this.mat;
         return mesh;
     }
     toggleZoom() {
-        console.log(this.game);
         if(this.zoomed) {
             this.zoomed = false;
+            this.player.camera.fov = 1;
             this.mesh.position.x = 0.5;
             this.mesh.position.y = -0.3;
             this.mesh.position.z = 2;
         }
         else {
             this.zoomed = true;
+            this.player.camera.fov = 0.25;
             this.mesh.position.x = 0;
             this.mesh.position.y = -0.25;
             this.mesh.position.z = 1;
@@ -150,13 +147,17 @@ class Weapon {
         return gunSight;
     }
     shoot() {
-        console.log("hello from shoot!");
-        console.log(this.game);
-        var bullet = BABYLON.Mesh.CreateSphere('bullet', 3, 0.3, this.game.scene);
+        var bullet = BABYLON.MeshBuilder.CreateCylinder('bullet', {diameter: 0.07, height: 0.15}, this.game.scene);
+        // set up the position of the bullet
+        bullet.rotation.x = this.player.camera.rotation.x + Math.PI/2;
+        bullet.rotation.y = this.player.camera.rotation.y;
+        bullet.rotation.z = this.player.camera.rotation.z;
         var x = this.player.weapon.gunSight.position.x + this.player.camera.position.x;
         var y = this.player.weapon.gunSight.position.y + this.player.camera.position.y;
         var z = this.player.weapon.gunSight.position.z + this.player.camera.position.z;
         bullet.position = new BABYLON.Vector3(x, y, z);
+
+        // set the material of the bullet
         bullet.material = new BABYLON.StandardMaterial('bulletTexture', this.game.scene);
         bullet.material.diffuseColor = new BABYLON.Color3(3, 2, 0);
 
@@ -165,32 +166,59 @@ class Weapon {
         var direction = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, 1), invView);
         direction.normalize();
         direction.scaleInPlace(10);
-        // bullet.position.addInPlace(direction);
-        bullet.physicsImpostor = new BABYLON.PhysicsImpostor(bullet, BABYLON.PhysicsImpostor.SphereImpostor, {mass: .1, restitution: 0.9}, this.game.scene);
-        bullet.physicsImpostor.applyImpulse(direction, bullet.getAbsolutePosition());
-        // bullet.physicsImpostor.setLinearVelocity(direction);
 
-        // this.game.scene.registerBeforeRender(function() {
-        //     bullet.position.addInPlace(direction);
-        // });
+        bullet.physicsImpostor = new BABYLON.PhysicsImpostor(bullet, BABYLON.PhysicsImpostor.CylinderImpostor, {mass: .1, restitution: 0.5}, this.game.scene);
+        bullet.physicsImpostor.applyImpulse(direction, bullet.getAbsolutePosition());
+        bullet.physicsImpostor.registerOnPhysicsCollide(this.game.map.ground.physicsImpostor, function(main, collided) {
+            main.object.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+        });
+        for(var i = 0;i < this.game.targets.length;i++) {
+            bullet.physicsImpostor.registerOnPhysicsCollide(this.game.targets[i].mesh.physicsImpostor, function (main, collided) {
+                toBeRemoved.push(main.object);
+                collided.object.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+            });
+        }
+        for(var i = 0;i < this.game.enemies.length;i++) {
+            bullet.physicsImpostor.registerOnPhysicsCollide(this.game.enemies[i].mesh.physicsImpostor, function (main, collided) {
+                toBeRemoved.push(main.object);
+                toBeRemoved.push(collided.object);
+            });
+        }
+    }
+}
+class Enemy {
+    constructor(game, position) {
+        this.game = game;
+        this.position = position;
+        this.mesh = this.createMesh();
+    }
+    createMesh() {
+        var box = new BABYLON.MeshBuilder.CreateBox('enemy', {height: 5, width: 5, depth: 5}, this.game.scene);
+        box.position = this.position;
+        box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, {mass: 0.1, restitution: 0.5}, this.game.scene);
+        box.checkCollisions = true;
+        return box;
     }
 }
 class Target {
-    constructor(game) {
+    constructor(game, position) {
         this.game = game;
-        var sphere = new BABYLON.MeshBuilder.CreateSphere('sphere', {segments: 64, diameter: 4}, this.game.scene);
-        sphere.position.y = 2;
-        sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, {mass: 1, restitution: 0.5}, this.game.scene);
+        var sphere = new BABYLON.MeshBuilder.CreateSphere('Target', {segments: 64, diameter: 4}, this.game.scene);
+        sphere.position = position;
+        sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, {mass: 1, restitution: 0}, this.game.scene);
         sphere.checkCollisions = true;
+        this.mesh = sphere;
+        this.mesh.material = new BABYLON.StandardMaterial('bulletTexture', this.game.scene);
+        this.mesh.material.diffuseColor = new BABYLON.Color3(3, 2, 0);
     }
 }
 class Map {
     constructor(game) {
         this.game = game;
         var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0));
-        var ground = BABYLON.MeshBuilder.CreateGround('ground1', {height: 100, width: 100, depth: 1, subdivisions: 4}, this.game.scene);
-        ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, {mass: 0, restitution: 0.9}, this.game.scene);
-        ground.checkCollisions = true;
+        this.ground = BABYLON.MeshBuilder.CreateBox('ground1', {height: 5, width: 100, depth: 100, subdivisions: 4}, this.game.scene);
+        this.ground.physicsImpostor = new BABYLON.PhysicsImpostor(this.ground, BABYLON.PhysicsImpostor.BoxImpostor, {move: false, mass: 0, restitution: 0.5, friction: 0.5}, this.game.scene);
+        this.ground.checkCollisions = true;
     }
 }
 class Game {
@@ -198,9 +226,17 @@ class Game {
         this.engine = engine;
         this.scene = this.createScene();
         // add things
-        var t1 = new Target(this);
         this.player = new Player(this);
         this.map = new Map(this);
+        this.targets = [
+            new Target(this, new BABYLON.Vector3(0, 0, 0)),
+            new Target(this, new BABYLON.Vector3(4, 2, 0)),
+            new Target(this, new BABYLON.Vector3(8, 1, 0)),
+            new Target(this, new BABYLON.Vector3(14, 2, 0))
+        ];
+        this.enemies = [
+            new Enemy(this, new BABYLON.Vector3(4, 6, 4))
+        ];
         createEventListeners(this.player);
         function createEventListeners(player) {
             // shooting
@@ -226,7 +262,6 @@ class Game {
     }
     createScene() {
         var scene = new BABYLON.Scene(this.engine);
-        console.log(scene);
         // gravity
         scene.gravity = new BABYLON.Vector3(0, -9.81, 0);
         var physics = new BABYLON.CannonJSPlugin();
@@ -235,8 +270,6 @@ class Game {
         scene.collisionsEnabled = true;
         return scene;
     }
-
-
 }
 // pointer lock stuff
 var canvas = document.getElementById("game-canvas-1");
@@ -248,16 +281,26 @@ canvas.onclick = function() {
     canvas.requestPointerLock();
 }
 
-// create the engine, game, and start it!
-var engine = new BABYLON.Engine(canvas, true);
-engine.isPointerLock = true;
-g = new Game(engine);
-engine.runRenderLoop(function() {
-    g.scene.render();
-});
-window.addEventListener('resize', function() {
-    engine.resize();
-});
+//global list of things to be removed at each tick of the render loop
+var toBeRemoved = [];
+window.onload = function() {
+    // create the engine, game
+    var engine = new BABYLON.Engine(canvas, true);
+    engine.isPointerLock = true;
+    g = new Game(engine);
+    // start it!
+    engine.runRenderLoop(function () {
+        g.scene.render();
+        for(var i = 0;i < toBeRemoved.length;i++) {
+            console.log("To Be Removed: "+toBeRemoved[i]);
+            toBeRemoved[i].dispose();
+        }
+        toBeRemoved = [];
+    });
+    window.addEventListener('resize', function () {
+        engine.resize();
+    });
+}
 // function createScene() {
 //     // scene, gravity, collisions
 //     var scene = new BABYLON.Scene(engine);
