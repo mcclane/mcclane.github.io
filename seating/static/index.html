@@ -1,0 +1,16 @@
+<html>
+    <header>
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </header>
+    <body>
+        <button class="mode-select-button" onclick="switchOnClickMode(createNewDeskOnClick)">Create New Desks</button>
+        <button class="mode-select-button" onclick="switchOnMouseDownMode(dragDeskOnMouseDown, dragDeskOnMouseUp, dragDeskOnMouseMove)">Drag Desks Around</button>
+        <button class="mode-select-button" onclick="switchOnClickMode(assignStudentOnClick)">Manually Assign Desks</button><br>
+        <textarea></textarea>
+        <div id="canvas-container">
+            <input id="student-name-input"></input>
+            <canvas id="canvas" width=1000 height=1000>Update your browser...</canvas>
+        </div>
+        <script src="seating.js"></script>
+    </body>
+</html>
