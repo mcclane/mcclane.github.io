@@ -8,7 +8,7 @@ studentNameInput = document.getElementById("student-name-input");
 onCanvasClick = createNewDeskOnClick;
 onCanvasMouseDown = null;
 onCanvasMouseUp = null;
-onCanvasMouseMove = null;
+onCanvasMouseMove = shadowNewDeskOnMouseMove;
 
 desks = [];
 students = [];
@@ -102,6 +102,11 @@ function createNewDeskOnClick(x, y) {
     desks.push(new Desk(x, y, 200, 100));
     render();
 }
+function shadowNewDeskOnMouseMove(x, y) {
+    render();
+    ctx.strokeStyle = "#D3D3D3";
+    ctx.strokeRect(x, y, 200, 100);
+}
 function assignStudentOnClick(x, y) {
     clickedDesk = false;
     input = document.getElementById("student-name-input");
@@ -121,6 +126,27 @@ function assignStudentOnClick(x, y) {
         input.value = "";
     }
     render();
+}
+function removeDeskOnClick(x, y) {
+    for(var i = 0;i < desks.length;i++) {
+        if(desks[i].contains(x, y)) {
+            desks.splice(i, 1);
+            render();
+            break;
+        }
+    }
+}
+function highlightDeskOnMouseMove(x, y) {
+    desks.forEach((desk) => {
+        desk.unselect();
+    });
+    for(var i = 0;i < desks.length;i++) {
+        if(desks[i].contains(x, y)) {
+            desks[i].select();
+            render();
+            break;
+        }
+    }
 }
 var previousMousePosition = [];
 function dragDeskOnMouseDown(x, y) {
@@ -154,9 +180,10 @@ function clearFunctions() {
     onCanvasMouseUp = null;
     onCanvasMouseMove = null;
 }
-function switchOnClickMode(func) {
+function switchOnClickMode(funcDown, funcMove) {
     clearFunctions();
-    onCanvasClick = func;
+    onCanvasClick = funcDown;
+    onCanvasMouseMove = funcMove;
 }
 function switchOnMouseDownMode(funcDown, funcUp, funcMove) {
     clearFunctions();
@@ -181,4 +208,22 @@ function render() {
     desks.forEach((desk) => {
         desk.render();
     });
+}
+function randomlyAssignStudents() {
+    students = document.getElementById("student-names").value.split("\n");
+    for(var i = 0;i < students.length;i++) {
+        index1 = Math.floor(Math.random() * students.length);
+        index2 = Math.floor(Math.random() * students.length);
+        temp = students[index1];
+        students[index1] = students[index2];
+        students[index2] = temp;
+    }
+    var counter = 0;
+    desks.forEach((desk) => {
+        if(counter < students.length) {
+            desk.setStudent(students[counter]);
+        }
+        counter++;
+    });
+    render();
 }
