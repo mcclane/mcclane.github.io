@@ -1,1 +1,0 @@
-{"version":3,"sources":["spot.css"],"names":[],"mappings":"AAAA,MACI,oBAAsB,CAE1B,YACI,YACA,UAAY","file":"static/css/main.d7801b82.css","sourcesContent":[".spot {\n    display: inline-block;\n}\n.spot video {\n    height: 100%;\n    width: 100%;\n}\n\n\n\n// WEBPACK FOOTER //\n// ./src/spot.css"],"sourceRoot":""}
