@@ -1,26 +1,16 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto:400i');
-body {
-    background-color: black;
+.project-list {
+    list-style-type: square;
 }
-.main_title {
-    color: white;
-    font-family: 'Roboto', sans-serif;
-    font-size: 10vw;
-    text-align: center;
+.awards {
+    display: inline-block;
 }
-.main_body {
-    color: white;
-    font-family: 'Roboto', sans-serif;
-    font-size: 5vw;
-    text-align: center;
+a:link, a:visited {
+    color: blue;
 }
-.svg {
-    color: white;
-    fill: white;
+.vim-turd {
+    color: #654321;
 }
-a:hover {
-    color:white;
-}
-a {
-    color: purple;
+.linkedout {
+    height: 50px;
+    width: 100px;
 }
