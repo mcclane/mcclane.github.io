@@ -3,6 +3,7 @@
 }
 .awards {
     display: inline-block;
+    margin: 50px;
 }
 a:link, a:visited {
     color: blue;
