@@ -24,7 +24,7 @@ Applying [neural graph machines](https://arxiv.org/abs/1703.04818) to the METABR
 
 ## Volunteering
 
-### The Noor Clinic
+### The Noor Clinic, Jan 2019 - Present
 The [Noor Clinic](https://slonoorfoundation.org/) is a free clinic for patients without health insurance. I help them answer questions along the lines of "How many patients with (type 2 diabetes, high blood pressure, ...) did we see in (2019, 2017, 2016, ...) from (North County, San Luis Obispo, Templeton, ...)?" It involves piecing together data from an outdated EMR and excel spreadsheets. Python and the pandas library are very helpful.
 
 I also help collect the data we use to answer these questions from the paper patient charts used in the clinic.
